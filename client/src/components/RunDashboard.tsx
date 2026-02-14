@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Sparkles, Terminal, CheckCircle2, Loader2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 interface Step {
     type: string;
     config: any;
@@ -34,7 +36,7 @@ export default function RunDashboard({
 
         try {
             // 1. Ensure the workflow is saved so we have an ID
-            const workflowRes = await fetch('http://localhost:8000/api/workflows', {
+            const workflowRes = await fetch(`${API_URL}/api/workflows`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: workflowName, steps })
@@ -50,7 +52,7 @@ export default function RunDashboard({
                 setCurrentStepIndex(i);
                 const step = steps[i];
 
-                const res = await fetch(`http://localhost:8000/api/workflows/run-step`, {
+                const res = await fetch(`${API_URL}/api/workflows/run-step`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -72,7 +74,7 @@ export default function RunDashboard({
             setCurrentStepIndex(steps.length);
 
             // 3. Record the final result in history
-            await fetch('http://localhost:8000/api/recent-runs', {
+            await fetch(`${API_URL}/api/recent-runs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Sparkles, LayoutPanelLeft, PlayCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 interface Step {
     type: "clean" | "summarize" | "extract" | "tag";
     config: Record<string, any>;
@@ -26,7 +28,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
     ];
 
     useEffect(() => {
-        fetch('http://localhost:8000/api/templates')
+        fetch(`${API_URL}/api/templates`)
             .then(res => res.json())
             .then(setTemplates);
     }, []);

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Clock, ListPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 interface Workflow {
     id: number;
     name: string;
@@ -31,7 +33,7 @@ export default function HistorySidebar({ onSelectRun }: {
 
     const fetchRecentRuns = async () => {
         try {
-            const res = await fetch('http://localhost:8000/api/recent-runs');
+            const res = await fetch(`${API_URL}/api/recent-runs`);
             if (res.ok) {
                 const data = await res.json();
                 setRecentRuns(data); // Backend now limits to 10
@@ -51,7 +53,7 @@ export default function HistorySidebar({ onSelectRun }: {
     const clearRecentRuns = async () => {
         if (!confirm("Are you sure you want to clear your execution history?")) return;
         try {
-            const res = await fetch('http://localhost:8000/api/recent-runs', {
+            const res = await fetch(`${API_URL}/api/recent-runs`, {
                 method: 'DELETE',
             });
             if (res.ok) {

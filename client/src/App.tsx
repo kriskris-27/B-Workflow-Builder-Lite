@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 import { PlusCircle, LayoutDashboard, Activity as PulseIcon, Sidebar, ArrowLeft } from 'lucide-react';
 
 import HistorySidebar from './components/HistorySidebar';
@@ -23,18 +25,18 @@ export default function App() {
     useEffect(() => {
         const checkHealth = async () => {
             try {
-                const apiRes = await fetch('http://localhost:8000/health');
+                const apiRes = await fetch(`${API_URL}/health`);
                 setApiOk(apiRes.ok);
             } catch { setApiOk(false); }
 
             try {
-                const dbRes = await fetch('http://localhost:8000/health/db');
+                const dbRes = await fetch(`${API_URL}/health/db`);
                 setDbOk(dbRes.ok);
             } catch { setDbOk(false); }
 
             if (geminiStatus !== 'connected') {
                 try {
-                    const geminiRes = await fetch('http://localhost:8000/health/gemini');
+                    const geminiRes = await fetch(`${API_URL}/health/gemini`);
                     const data = await geminiRes.json();
                     if (data.ok) setGeminiStatus('connected');
                     else if (data.status === 'rate_limited') {
@@ -61,7 +63,7 @@ export default function App() {
     const handleSelectRun = async (run: any) => {
         // Fetch the workflow details for this run
         try {
-            const res = await fetch(`http://localhost:8000/api/workflows/${run.workflow_id}`);
+            const res = await fetch(`${API_URL}/api/workflows/${run.workflow_id}`);
             if (res.ok) {
                 const workflow = await res.json();
                 setActiveWorkflow({ name: workflow.name, steps: workflow.steps });
@@ -150,7 +152,7 @@ export default function App() {
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="px-4 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold transition-all">
-                            v1.0.4-beta
+                            demo
                         </button>
                     </div>
                 </header>
