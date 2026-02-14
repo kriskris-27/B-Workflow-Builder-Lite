@@ -17,10 +17,10 @@
 *.sw?
 
 # Backend (Python)
-backend/__pycache__/
-backend/*.py[cod]
-backend/*$py.class
-backend/.pytest_cache/
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/.pytest_cache/
 backend/.venv/
 backend/venv/
 backend/env/
