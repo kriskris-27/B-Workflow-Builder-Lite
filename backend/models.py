@@ -9,3 +9,12 @@ class Workflow(Base):
     name = Column(String, index=True)
     steps = Column(JSON)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class RecentRun(Base):
+    __tablename__ = "recent_runs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    workflow_id = Column(Integer, index=True)
+    input_data = Column(JSON)
+    output_data = Column(JSON)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

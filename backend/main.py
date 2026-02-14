@@ -51,9 +51,9 @@ TEMPLATES = [
         "id": "insights_only",
         "name": "Insights Only",
         "steps": [
+            {"type": "clean"},
             {"type": "summarize"},
-            {"type": "extract"},
-            {"type": "tag"}
+            {"type": "extract"}
         ]
     }
 ]
@@ -182,9 +182,19 @@ async def run_workflow(workflow_id: int, initial_data: str, db: Session = Depend
     db_workflow = db.query(models.Workflow).filter(models.Workflow.id == workflow_id).first()
     if not db_workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     try:
         result = await runner.run_workflow(db_workflow.steps, initial_data)
+
+        # Store the recent run
+        recent_run = models.RecentRun(
+            workflow_id=workflow_id,
+            input_data=initial_data,
+            output_data=result
+        )
+        db.add(recent_run)
+        db.commit()
+
         return {"result": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Workflow execution failed")
@@ -194,5 +204,42 @@ async def run_step(request: schemas.StepRunRequest):
     try:
         result = await runner.run_step(request.step_type, request.input_data, request.config or {})
         return {"result": result}
+    except ValueError as e:
+        # Known validation / unsupported step errors return 400
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Step execution failed: {str(e)}")
+
+@app.delete("/api/recent-runs")
+def clear_recent_runs(db: Session = Depends(database.get_db)):
+    try:
+        db.query(models.RecentRun).delete()
+        db.commit()
+        return {"message": "All recent runs cleared successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to clear recent runs")
+
+@app.get("/api/recent-runs")
+def get_recent_runs(db: Session = Depends(database.get_db)):
+    try:
+        recent_runs = db.query(models.RecentRun).all()
+        return recent_runs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch recent runs")
+
+@app.post("/api/recent-runs")
+def add_recent_run(recent_run: schemas.RecentRunCreate, db: Session = Depends(database.get_db)):
+    try:
+        new_run = models.RecentRun(
+            workflow_id=recent_run.workflow_id,
+            input_data=recent_run.input_data,
+            output_data=recent_run.output_data
+        )
+        db.add(new_run)
+        db.commit()
+        db.refresh(new_run)
+        return new_run
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to add recent run")

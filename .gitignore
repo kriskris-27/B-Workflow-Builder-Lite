@@ -25,6 +25,14 @@ backend/.venv/
 backend/venv/
 backend/env/
 
+# Backend specific ignores
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/.env
+backend/test.db
+backend/.venv/
+
 # Frontend (Node/React)
 client/node_modules/
 client/dist/

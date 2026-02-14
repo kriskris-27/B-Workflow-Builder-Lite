@@ -24,3 +24,8 @@ class StepRunRequest(BaseModel):
     step_type: str
     input_data: str
     config: Optional[dict] = {}
+
+class RecentRunCreate(BaseModel):
+    workflow_id: int
+    input_data: dict
+    output_data: dict

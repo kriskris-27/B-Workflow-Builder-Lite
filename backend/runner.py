@@ -23,7 +23,9 @@ class WorkflowRunner:
             "clean": f"Clean and normalize the following text. Remove any unnecessary formatting or noise. Keep it concise:\n\n{input_data}",
             "summarize": f"Providing a concise summary of the following text:\n\n{input_data}",
             "extract": f"Extract the key entities and structured information from the following text as a JSON-like string:\n\n{input_data}",
-            "tag": f"Categorize the following text with relevant tags based on its content. Return only a comma-separated list of tags:\n\n{input_data}"
+            "tag": f"Categorize the following text with relevant tags based on its content. Return only a comma-separated list of tags:\n\n{input_data}",
+            # `insight` produces short insights and actionable recommendations from the input
+            "insight": f"Read the following text and produce 3 short insights and 2 actionable recommendations. Keep each insight to one sentence and each recommendation short and specific:\n\n{input_data}"
         }
 
         if step_type not in prompts:

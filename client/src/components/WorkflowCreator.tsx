@@ -3,7 +3,7 @@ import { Plus, Trash2, Sparkles, LayoutPanelLeft, PlayCircle } from 'lucide-reac
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Step {
-    type: "clean" | "summarize" | "extract" | "tag";
+    type: "clean" | "summarize" | "extract" | "tag" | "insight";
     config: Record<string, any>;
 }
 
@@ -22,7 +22,8 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
         { type: 'clean', label: '🧹 Clean', desc: 'Normalize text input' },
         { type: 'summarize', label: '📝 Summarize', desc: 'Create a concise brief' },
         { type: 'extract', label: '🔍 Extract', desc: 'Pull key entities' },
-        { type: 'tag', label: '🏷️ Tag', desc: 'Categorize content' }
+        { type: 'tag', label: '🏷️ Tag', desc: 'Categorize content' },
+        { type: 'insight', label: '💡 Insight', desc: 'Generate insights' }
     ];
 
     useEffect(() => {

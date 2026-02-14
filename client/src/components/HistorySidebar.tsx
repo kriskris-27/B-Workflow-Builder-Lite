@@ -9,8 +9,17 @@ interface Workflow {
     steps: any[];
 }
 
+interface RecentRun {
+    id: number;
+    workflow_id: number;
+    input_data: any;
+    output_data: any;
+    created_at: string;
+}
+
 export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow: (w: Workflow) => void }) {
     const [history, setHistory] = useState<Workflow[]>([]);
+    const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchHistory = async () => {
@@ -27,9 +36,43 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
         }
     };
 
+    const fetchRecentRuns = async () => {
+        try {
+            const res = await fetch('http://localhost:8000/api/recent-runs');
+            if (res.ok) {
+                const data = await res.json();
+                setRecentRuns(data.slice(0, 5));
+            }
+        } catch (err) {
+            console.error("Failed to fetch recent runs", err);
+        }
+    };
+
+    const clearRecentRuns = async () => {
+        try {
+            const res = await fetch('http://localhost:8000/api/recent-runs', {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                setRecentRuns([]); // Clear the state for recent runs
+                setHistory([]); // Clear the history state to reflect changes
+                alert('Recent runs cleared successfully');
+            } else {
+                alert('Failed to clear recent runs');
+            }
+        } catch (err) {
+            console.error('Error clearing recent runs:', err);
+            alert('An error occurred while clearing recent runs');
+        }
+    };
+
     useEffect(() => {
         fetchHistory();
-        const interval = setInterval(fetchHistory, 30000);
+        fetchRecentRuns();
+        const interval = setInterval(() => {
+            fetchHistory();
+            fetchRecentRuns();
+        }, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -57,31 +100,33 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
                         [1, 2, 3].map(i => (
                             <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse" />
                         ))
-                    ) : history.length === 0 ? (
+                    ) : recentRuns.length === 0 ? (
                         <div className="text-center py-12 px-4">
                             <p className="text-neutral-600 text-sm">No recent workflows found.</p>
                         </div>
                     ) : (
-                        history.map((w) => (
-                            <motion.button
-                                key={w.id}
+                        recentRuns.map((r) => (
+                            <motion.div
+                                key={r.id}
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 whileHover={{ x: 4 }}
-                                onClick={() => onSelectWorkflow(w)}
                                 className="w-full group p-4 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-between hover:bg-white/10 hover:border-white/20 transition-all text-left"
                             >
                                 <div className="min-w-0">
                                     <h3 className="font-semibold text-sm truncate text-white/90 group-hover:text-white transition-colors">
-                                        {w.name}
+                                        {`Run for workflow ${r.workflow_id}`}
                                     </h3>
                                     <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-tight">
-                                        {new Date(w.created_at).toLocaleDateString()} • {w.steps.length} steps
+                                        {new Date(r.created_at).toLocaleDateString()}
+                                    </p>
+                                    <p className="text-xs text-neutral-400 mt-2 truncate">
+                                        {typeof r.output_data === 'string' ? r.output_data : JSON.stringify(r.output_data)}
                                     </p>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-indigo-400 transition-colors" />
-                            </motion.button>
+                            </motion.div>
                         ))
                     )}
                 </AnimatePresence>
@@ -93,6 +138,12 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
                         Pro Tip: You can reuse any past workflow to save time.
                     </p>
                 </div>
+                <button
+                    onClick={clearRecentRuns}
+                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                    Clear Recent Runs
+                </button>
             </div>
         </div>
     );
