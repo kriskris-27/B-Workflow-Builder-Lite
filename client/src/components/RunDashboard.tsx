@@ -79,6 +79,14 @@ export default function RunDashboard({
                 }
 
                 const data = await res.json();
+
+                // Check for rate limit in step result
+                if (data.result && data.result.startsWith("RATE_LIMIT_HIT")) {
+                    setError("RATE_LIMIT_HIT");
+                    setLoading(false);
+                    return; // Stop execution
+                }
+
                 currentInput = data.result;
                 newResults.push(data.result);
                 setStepResults([...newResults]);
@@ -159,7 +167,24 @@ export default function RunDashboard({
                             disabled={loading}
                             className="w-full bg-transparent border-none outline-none resize-none text-xl font-medium text-[#aaa] placeholder:text-[#111] leading-relaxed min-h-[400px]"
                         />
-                        {error && (
+                        {error === "RATE_LIMIT_HIT" ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-8 p-8 bg-yellow-500/10 border border-yellow-500/20 rounded-[2rem] flex flex-col items-center text-center gap-4"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse">
+                                    <AlertCircle className="w-6 h-6 text-yellow-500" />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black text-yellow-500 uppercase tracking-tight mb-2">Neural Core Cooling Down</h4>
+                                    <p className="text-[#888] text-sm font-medium leading-relaxed max-w-xs mx-auto">
+                                        Whoa there, speedster! The free tier AI needs a quick breather.
+                                        Please wait <span className="text-white font-bold">60 seconds</span> before initializing the next run.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        ) : error && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}

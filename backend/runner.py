@@ -12,11 +12,17 @@ class WorkflowRunner:
         self.model_id = "gemini-2.5-flash-lite"
 
     async def _call_gemini(self, prompt: str) -> str:
-        response = await self.client.aio.models.generate_content(
-            model=self.model_id,
-            contents=prompt
-        )
-        return response.text
+        try:
+            response = await self.client.aio.models.generate_content(
+                model=self.model_id,
+                contents=prompt
+            )
+            return response.text
+        except Exception as e:
+            error_str = str(e).lower()
+            if "429" in error_str or "quota" in error_str:
+                return "RATE_LIMIT_HIT: The neural core is cooling down. Please standby for 60 seconds."
+            raise e
 
     async def run_step(self, step_type: str, input_data: str, config: Dict[str, Any]) -> str:
         prompts = {
@@ -40,6 +46,10 @@ class WorkflowRunner:
     async def run_workflow(self, steps: List[Dict[str, Any]], initial_data: str) -> str:
         current_data = initial_data
         for step in steps:
+            # Check if previous step returned a rate limit error
+            if current_data.startswith("RATE_LIMIT_HIT"):
+                 return current_data
+
             current_data = await self.run_step(
                 step_type=step["type"],
                 input_data=current_data,
