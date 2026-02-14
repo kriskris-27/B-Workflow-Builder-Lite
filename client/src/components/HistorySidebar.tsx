@@ -40,7 +40,7 @@ export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
     };
 
     const clearRecentRuns = async () => {
-        if (!confirm("Are you sure you want to clear your execution history?")) return;
+        
         try {
             const res = await fetch(`${API_URL}/api/recent-runs?user_id=${userId}`, {
                 method: 'DELETE',
@@ -72,7 +72,7 @@ export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
                     className="group flex items-center gap-2 text-[10px] font-black text-[#444] hover:text-red-500 transition-colors uppercase tracking-[0.2em]"
                 >
                     <Trash2 className="w-3 h-3 translate-y-[-1px]" />
-                    Flush
+                    Clear
                 </button>
             </header>
 
