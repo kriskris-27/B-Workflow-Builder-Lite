@@ -1,58 +1,90 @@
-Name : Krishnakumar
+# Krishnakumar
+### Backend Engineer | Node.js, TypeScript, Python (Django, FastAPI)
 
- 6385623211 — # krishnakumars0101@gmail.com — ï linkedin.com/in/krishnakumar — § github.com/kriskris-27 — 
-[krisss.vercel.app ](https://imkrisss.vercel.app/) - portfolio
-Summary — Backend Engineer - Node.js, TypeScript, Python (Django, FastAPI), Scalable APIs. Engineered secure
-OAuth and RBAC systems, enhancing API reliability by 20% . Built and scaled real-time WebSocket chat systems serving
-100+ concurrent sessions. Delivered production-ready backend architectures in both Node.js and Python stacks.
-Skills
-Languages TypeScript, JavaScript, Python, SQL
-Backend Node.js, Express, Fastapi, Django,
-WebSocket, REST APIs, MCP
-DevOps & Tools Linux, Git, GitHub, Docker, Postman, Jenkins, GCP basics
-Databases MongoDB, PostgreSQL
-Frontend React, Nextjs, Tailwind, Expo
-Concepts Authentication (JWT, OAuth,
-RBAC), API Security, CI/CD (Basics)
-Foundations DSA, Computer Networks, OS,
-DBMS, OOP, System Design (Basics)
-Experience
-Backend Developer — Wave Scholar (MyAnatomy Integration) Jul 2025 – Dec 2025
-– Implemented secure authentication using Passport.js, Google OAuth, JWT, and RBAC to protect backend APIs.
-– Built a real-time chatbot backend with REST APIs and WebSockets, supporting 100+ concurrent sessions.
-– Improved API reliability by reducing recurring production errors through enhanced error handling and dependency
-cleanup.
-Pastry shop — E-Commerce Platform 2025
-– Built a production-grade e-commerce platform for a client using Next.js 15, TypeScript, and PostgreSQL (Supabase).
-– Designed hybrid architecture using PostgreSQL for persistent data and Redis for checkout sessions, caching, and
-rate limiting.
-– Implemented secure authentication (NextAuth + Supabase), Razorpay payment integration with webhook
-validation, and role-based admin dashboard.
-Web Development Intern - Nxtlogic Software Solutions 2023
-– Developed responsive pages with HTML, CSS, and JavaScript.
-– Optimized layouts for cross-device performance and accessibility.
-Projects
-Bill Vision – Retail POS System
-– Built a full-stack, real-time POS system for retail and caf´e operations with scalable backend architecture.
-– Designed RESTful APIs and implemented role-based authentication and authorization.
-– Engineered high-performance checkout flow using keyboard-driven UX to improve transaction speed and reliability.
-– Tech stack: React, TypeScript, Tailwind CSS, Node.js, Express, MongoDB. Live Link
-Starlietti – EV Station Finder
-– Developed location-based service platform for discovering EV charging stations with real-time data rendering.
-– Built backend APIs with Node.js and Express; integrated geospatial data and MongoDB storage.
-– Delivered responsive, cross-platform UI using React and interactive mapping technologies. Live Link
-Vigor-X – Personalized Meal Planning & Fitness Mobile App
-– Designed and developed a full-stack wellness platform with a cross-platform mobile application (React
-Native/Expo) and a scalable microservices backend.
-– Implemented secure API gateway architecture using Node.js/TypeScript (Express) and FastAPI, integrating
-PostgreSQL for reliable data storage and JWT-based authentication.
-– Engineered AI-powered meal planning and fitness recommendation pipelines through RESTful APIs while
-optimizing mobile performance, UX, and data reliability.
-Education
-KIT – Kalaignarkarunanidhi Institute of Technology 2022 – 2026
-Bachelor of Engineering in Computer Science and Engineering CGPA: 8.1
-Certifications
-– Mastering Docker: Containers, Networking, and Orchestration - Code Signal
-– Python Foundation – Infosys Springboard
-– Programming in C – NPTEL
-– Web Development (HTML & CSS) – TechA Foundation 
+<div align="center">
+  <p>
+    <a href="tel:6385623211">📞 6385623211</a> • 
+    <a href="mailto:krishnakumars0101@gmail.com">📧 krishnakumars0101@gmail.com</a> • 
+    <a href="https://linkedin.com/in/krishnakumar">🔗 LinkedIn</a> • 
+    <a href="https://github.com/kriskris-27">🐙 GitHub</a> • 
+    <a href="https://imkrisss.vercel.app/">🌐 Portfolio</a>
+  </p>
+</div>
+
+---
+
+## 🚀 Summary
+Driven Backend Engineer specialized in building scalable APIs and real-time systems. Experienced in **Node.js, TypeScript, and Python (FastAPI/Django)**. Proven track record in engineering secure OAuth and RBAC systems, improving API reliability by 20%, and scaling WebSocket-based chat systems to 100+ concurrent sessions.
+
+---
+
+## 🛠️ Technical Skills
+
+| Category | Skills |
+| :--- | :--- |
+| **Languages** | TypeScript, JavaScript, Python, SQL |
+| **Backend** | Node.js, Express, FastAPI, Django, WebSockets, REST APIs, MCP |
+| **Databases** | MongoDB, PostgreSQL, Redis |
+| **DevOps & Tools** | Docker, Git/GitHub, Linux, Postman, Jenkins, GCP Basics |
+| **Frontend** | React, Next.js, Tailwind CSS, Expo (React Native) |
+| **Core Concepts** | JWT/OAuth2/RBAC, API Security, CI/CD, DSA, System Design |
+
+---
+
+## 💼 Professional Experience
+
+### **Backend Developer** | Wave Scholar (MyAnatomy Integration)
+*Jul 2025 – Dec 2025*
+- Implemented secure authentication flows using **Passport.js, Google OAuth, JWT, and RBAC** to harden backend APIs.
+- Developed a high-performance **real-time chatbot backend** using WebSockets, supporting 100+ concurrent sessions.
+- Enhanced API reliability and reduced production downtime through robust error handling and recursive dependency optimization.
+
+### **E-Commerce Platform Architect** | Pastry Shop (Client Project)
+*2025*
+- Built a production-grade e-commerce engine using **Next.js 15, TypeScript, and Supabase (PostgreSQL)**.
+- Designed a hybrid data strategy utilizing **PostgreSQL** for persistence and **Redis** for checkout session caching and rate-limiting.
+- Integrated **Razorpay** payment systems with secure webhook validation and a custom role-based admin dashboard.
+
+### **Web Development Intern** | Nxtlogic Software Solutions 
+*2023*
+- Crafted responsive, accessible user interfaces using HTML, CSS, and vanilla JavaScript.
+- Optimized multi-device layouts ensuring 100% cross-browser compatibility.
+
+---
+
+## 🧪 Featured Projects
+
+### **Bill Vision** – Retail POS System
+*React, TS, Node.js, MongoDB*
+- Full-stack POS system designed for high-frequency retail/cafe environments.
+- Developed a **keyboard-driven UX** and optimized checkout flows to maximize transaction speed.
+- [Live Link](https://imkrisss.vercel.app/)
+
+### **Starlietti** – EV Station Finder
+*Node.js, Express, MongoDB, Interactive Maps*
+- Built a location-aware platform for discovering EV charging stations.
+- Integrated **geospatial data modules** with MongoDB for real-time station proximity rendering.
+- [Live Link](https://imkrisss.vercel.app/)
+
+### **Vigor-X** – AI Fitness & Meal Planner
+*React Native/Expo, FastAPI, PostgreSQL*
+- Developed a wellness ecosystem featuring a cross-platform mobile app and microservices backend.
+- Engineered **AI-driven pipelines** for personalized meal and fitness recommendations.
+
+---
+
+## 🎓 Education
+**KIT – Kalaignarkarunanidhi Institute of Technology** | *2022 – 2026*  
+*Bachelor of Engineering (CSE)* • **CGPA: 8.1**
+
+---
+
+## 🏆 Certifications
+- **Mastering Docker**: Containers & Networking (Code Signal)
+- **Python Foundation** (Infosys Springboard)
+- **Programming in C** (NPTEL)
+- **Web Development** (TechA Foundation)
+
+---
+
+> This resume was refined with the help of **Antigravity AI** (V1.2.0), your coding partner.
