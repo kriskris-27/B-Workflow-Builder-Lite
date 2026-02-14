@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, ChevronRight, ListPlus } from 'lucide-react';
+import { Clock, ListPlus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Workflow {
@@ -12,28 +12,21 @@ interface Workflow {
 interface RecentRun {
     id: number;
     workflow_id: number;
+    workflow_name?: string;
     input_data: any;
     output_data: any;
     created_at: string;
 }
 
-export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow: (w: Workflow) => void }) {
-    const [history, setHistory] = useState<Workflow[]>([]);
+export default function HistorySidebar({ onSelectRun }: {
+    onSelectRun: (run: RecentRun) => void
+}) {
     const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchHistory = async () => {
-        try {
-            const res = await fetch('http://localhost:8000/api/workflows');
-            if (res.ok) {
-                const data = await res.json();
-                setHistory(data.slice(0, 5));
-            }
-        } catch (err) {
-            console.error("Failed to fetch history", err);
-        } finally {
-            setLoading(false);
-        }
+        // No longer showing static history, but keeping the refresh logic for runs
+        fetchRecentRuns();
     };
 
     const fetchRecentRuns = async () => {
@@ -41,38 +34,38 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
             const res = await fetch('http://localhost:8000/api/recent-runs');
             if (res.ok) {
                 const data = await res.json();
-                setRecentRuns(data.slice(0, 5));
+                setRecentRuns(data); // Backend now limits to 10
             }
         } catch (err) {
             console.error("Failed to fetch recent runs", err);
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleRefresh = () => {
+        setLoading(true); // Set loading to true before fetching
+        fetchRecentRuns(); // Only need to fetch recent runs now
+    };
+
     const clearRecentRuns = async () => {
+        if (!confirm("Are you sure you want to clear your execution history?")) return;
         try {
             const res = await fetch('http://localhost:8000/api/recent-runs', {
                 method: 'DELETE',
             });
             if (res.ok) {
-                setRecentRuns([]); // Clear the state for recent runs
-                setHistory([]); // Clear the history state to reflect changes
-                alert('Recent runs cleared successfully');
-            } else {
-                alert('Failed to clear recent runs');
+                setRecentRuns([]);
+                handleRefresh();
             }
         } catch (err) {
             console.error('Error clearing recent runs:', err);
-            alert('An error occurred while clearing recent runs');
         }
     };
 
     useEffect(() => {
-        fetchHistory();
-        fetchRecentRuns();
-        const interval = setInterval(() => {
-            fetchHistory();
-            fetchRecentRuns();
-        }, 30000);
+        handleRefresh();
+        const interval = setInterval(handleRefresh, 15000);
         return () => clearInterval(interval);
     }, []);
 
@@ -81,10 +74,10 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-indigo-400" />
-                    <h2 className="font-bold text-sm uppercase tracking-widest text-neutral-400">Recent Runs</h2>
+                    <h2 className="font-bold text-sm uppercase tracking-widest text-neutral-400">Run History</h2>
                 </div>
                 <button
-                    onClick={fetchHistory}
+                    onClick={handleRefresh}
                     className="p-2 hover:bg-white/5 rounded-lg transition-colors"
                     title="Refresh history"
                 >
@@ -101,8 +94,10 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
                             <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse" />
                         ))
                     ) : recentRuns.length === 0 ? (
-                        <div className="text-center py-12 px-4">
-                            <p className="text-neutral-600 text-sm">No recent workflows found.</p>
+                        <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                            <p className="text-xs text-indigo-300 leading-relaxed font-medium">
+                                Click any run to view the full input and generated output.
+                            </p>
                         </div>
                     ) : (
                         recentRuns.map((r) => (
@@ -112,37 +107,34 @@ export default function HistorySidebar({ onSelectWorkflow }: { onSelectWorkflow:
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 whileHover={{ x: 4 }}
-                                className="w-full group p-4 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex items-center justify-between hover:bg-white/10 hover:border-white/20 transition-all text-left"
+                                onClick={() => onSelectRun(r)}
+                                className="w-full group p-4 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex flex-col hover:bg-white/10 hover:border-white/20 transition-all text-left cursor-pointer"
                             >
-                                <div className="min-w-0">
-                                    <h3 className="font-semibold text-sm truncate text-white/90 group-hover:text-white transition-colors">
-                                        {`Run for workflow ${r.workflow_id}`}
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="font-semibold text-xs truncate text-white/90 group-hover:text-white transition-colors">
+                                        {r.workflow_name || `Run #${r.id}`}
                                     </h3>
-                                    <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-tight">
-                                        {new Date(r.created_at).toLocaleDateString()}
-                                    </p>
-                                    <p className="text-xs text-neutral-400 mt-2 truncate">
+                                    <span className="text-[9px] text-neutral-600 font-bold uppercase tabular-nums">
+                                        {new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                                <div className="p-2 bg-black/20 rounded-lg border border-white/5">
+                                    <p className="text-[11px] text-neutral-400 line-clamp-2 italic font-mono">
                                         {typeof r.output_data === 'string' ? r.output_data : JSON.stringify(r.output_data)}
                                     </p>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-indigo-400 transition-colors" />
                             </motion.div>
                         ))
                     )}
                 </AnimatePresence>
             </div>
 
-            <div className="p-6 bg-gradient-to-t from-indigo-500/5 to-transparent border-t border-white/5">
-                <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-                    <p className="text-xs text-indigo-300 leading-relaxed font-medium">
-                        Pro Tip: You can reuse any past workflow to save time.
-                    </p>
-                </div>
+            <div className="p-6 border-t border-white/5 mt-auto">
                 <button
                     onClick={clearRecentRuns}
-                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-all active:scale-[0.98]"
                 >
-                    Clear Recent Runs
+                    Clear History
                 </button>
             </div>
         </div>

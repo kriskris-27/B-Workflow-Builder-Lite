@@ -223,10 +223,24 @@ def clear_recent_runs(db: Session = Depends(database.get_db)):
 @app.get("/api/recent-runs")
 def get_recent_runs(db: Session = Depends(database.get_db)):
     try:
-        recent_runs = db.query(models.RecentRun).all()
-        return recent_runs
+        # Join RecentRun with Workflow to get the workflow name for the UI
+        runs = db.query(models.RecentRun).order_by(models.RecentRun.created_at.desc()).limit(10).all()
+        
+        # Manually attach workflow names for simplicity in this demo
+        result = []
+        for r in runs:
+            wf = db.query(models.Workflow).filter(models.Workflow.id == r.workflow_id).first()
+            result.append({
+                "id": r.id,
+                "workflow_id": r.workflow_id,
+                "workflow_name": wf.name if wf else "Unknown Workflow",
+                "input_data": r.input_data,
+                "output_data": r.output_data,
+                "created_at": r.created_at
+            })
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to fetch recent runs")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch recent runs: {str(e)}")
 
 @app.post("/api/recent-runs")
 def add_recent_run(recent_run: schemas.RecentRunCreate, db: Session = Depends(database.get_db)):

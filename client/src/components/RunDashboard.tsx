@@ -7,12 +7,22 @@ interface Step {
     config: any;
 }
 
-export default function RunDashboard({ workflowName, steps }: { workflowName: string, steps: Step[] }) {
-    const [input, setInput] = useState('');
+export default function RunDashboard({
+    workflowName,
+    steps,
+    initialInput = '',
+    initialResult = null
+}: {
+    workflowName: string,
+    steps: Step[],
+    initialInput?: string,
+    initialResult?: string | null
+}) {
+    const [input, setInput] = useState(initialInput);
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<string | null>(null);
-    const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-    const [stepResults, setStepResults] = useState<string[]>([]);
+    const [result, setResult] = useState<string | null>(initialResult);
+    const [currentStepIndex, setCurrentStepIndex] = useState(initialResult ? steps.length : -1);
+    const [stepResults, setStepResults] = useState<string[]>(initialResult ? [initialResult] : []); // Simple placeholder for view mode
 
     const handleRun = async () => {
         if (!input.trim() || loading) return;
@@ -23,9 +33,19 @@ export default function RunDashboard({ workflowName, steps }: { workflowName: st
         setCurrentStepIndex(0);
 
         try {
+            // 1. Ensure the workflow is saved so we have an ID
+            const workflowRes = await fetch('http://localhost:8000/api/workflows', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: workflowName, steps })
+            });
+            const dbWorkflow = await workflowRes.json();
+            const workflowId = dbWorkflow.id;
+
             let currentInput = input;
             const newResults: string[] = [];
 
+            // 2. Execute steps sequentially
             for (let i = 0; i < steps.length; i++) {
                 setCurrentStepIndex(i);
                 const step = steps[i];
@@ -50,9 +70,21 @@ export default function RunDashboard({ workflowName, steps }: { workflowName: st
 
             setResult(currentInput);
             setCurrentStepIndex(steps.length);
-        } catch (err) {
+
+            // 3. Record the final result in history
+            await fetch('http://localhost:8000/api/recent-runs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    workflow_id: workflowId,
+                    input_data: input,
+                    output_data: currentInput
+                })
+            });
+
+        } catch (err: any) {
             console.error(err);
-            setResult("Error: Failed to execute workflow.");
+            setResult(`Error: ${err.message || "Failed to execute workflow."}`);
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, LayoutDashboard, Activity as PulseIcon, Sidebar } from 'lucide-react';
+import { PlusCircle, LayoutDashboard, Activity as PulseIcon, Sidebar, ArrowLeft } from 'lucide-react';
 
 import HistorySidebar from './components/HistorySidebar';
 import StatusPage from './components/StatusPage';
@@ -18,6 +18,7 @@ export default function App() {
 
     // Selected workflow for RunDashboard
     const [activeWorkflow, setActiveWorkflow] = useState<{ name: string, steps: any[] } | null>(null);
+    const [activeRun, setActiveRun] = useState<{ input: string, result: string } | null>(null);
 
     useEffect(() => {
         const checkHealth = async () => {
@@ -53,12 +54,23 @@ export default function App() {
 
     const handleRunWorkflow = (name: string, steps: any[]) => {
         setActiveWorkflow({ name, steps });
+        setActiveRun(null); // Clear active run when starting a new one
         setView('run');
     };
 
-    const handleSelectFromHistory = (w: any) => {
-        setActiveWorkflow({ name: w.name, steps: w.steps });
-        setView('run');
+    const handleSelectRun = async (run: any) => {
+        // Fetch the workflow details for this run
+        try {
+            const res = await fetch(`http://localhost:8000/api/workflows/${run.workflow_id}`);
+            if (res.ok) {
+                const workflow = await res.json();
+                setActiveWorkflow({ name: workflow.name, steps: workflow.steps });
+                setActiveRun({ input: run.input_data, result: run.output_data });
+                setView('run');
+            }
+        } catch (err) {
+            console.error("Failed to fetch workflow for run", err);
+        }
     };
 
     return (
@@ -107,7 +119,9 @@ export default function App() {
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="overflow-hidden border-r border-white/5"
                     >
-                        <HistorySidebar onSelectWorkflow={handleSelectFromHistory} />
+                        <HistorySidebar
+                            onSelectRun={handleSelectRun}
+                        />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -116,6 +130,16 @@ export default function App() {
             <main className="flex-1 relative z-10 flex flex-col overflow-hidden">
                 <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20 backdrop-blur-md">
                     <div className="flex items-center gap-4">
+                        {view !== 'dashboard' && (
+                            <button
+                                onClick={() => setView('dashboard')}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors group flex items-center gap-2"
+                            >
+                                <ArrowLeft className="w-4 h-4 text-neutral-400 group-hover:text-white" />
+                                <span className="text-xs font-bold text-neutral-500 group-hover:text-white uppercase tracking-widest transition-colors">Back</span>
+                            </button>
+                        )}
+                        {view !== 'dashboard' && <span className="text-neutral-800">|</span>}
                         <span className="text-sm font-bold text-neutral-500 uppercase tracking-widest">{view}</span>
                         {view === 'run' && activeWorkflow && (
                             <>
@@ -163,8 +187,13 @@ export default function App() {
                         )}
 
                         {view === 'run' && activeWorkflow && (
-                            <motion.div key="run" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 overflow-hidden">
-                                <RunDashboard workflowName={activeWorkflow.name} steps={activeWorkflow.steps} />
+                            <motion.div key={`run-${activeWorkflow.name}-${activeRun?.result || 'new'}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 overflow-hidden">
+                                <RunDashboard
+                                    workflowName={activeWorkflow.name}
+                                    steps={activeWorkflow.steps}
+                                    initialInput={activeRun?.input}
+                                    initialResult={activeRun?.result}
+                                />
                             </motion.div>
                         )}
 

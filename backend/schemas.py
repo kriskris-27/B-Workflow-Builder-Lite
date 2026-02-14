@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Any
 import datetime
 
 class Step(BaseModel):
@@ -27,5 +27,5 @@ class StepRunRequest(BaseModel):
 
 class RecentRunCreate(BaseModel):
     workflow_id: int
-    input_data: dict
-    output_data: dict
+    input_data: Any
+    output_data: Any

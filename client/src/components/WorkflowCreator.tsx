@@ -3,7 +3,7 @@ import { Plus, Trash2, Sparkles, LayoutPanelLeft, PlayCircle } from 'lucide-reac
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Step {
-    type: "clean" | "summarize" | "extract" | "tag" | "insight";
+    type: "clean" | "summarize" | "extract" | "tag";
     config: Record<string, any>;
 }
 
@@ -22,8 +22,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
         { type: 'clean', label: '🧹 Clean', desc: 'Normalize text input' },
         { type: 'summarize', label: '📝 Summarize', desc: 'Create a concise brief' },
         { type: 'extract', label: '🔍 Extract', desc: 'Pull key entities' },
-        { type: 'tag', label: '🏷️ Tag', desc: 'Categorize content' },
-        { type: 'insight', label: '💡 Insight', desc: 'Generate insights' }
+        { type: 'tag', label: '🏷️ Tag', desc: 'Categorize content' }
     ];
 
     useEffect(() => {
@@ -118,8 +117,8 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
                                             key={st.type}
                                             onClick={() => updateStep(index, st.type as Step['type'])}
                                             className={`p-3 rounded-2xl text-xs font-bold transition-all ${step.type === st.type
-                                                    ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                                                    : 'bg-white/5 text-neutral-500 hover:text-neutral-300'
+                                                ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
+                                                : 'bg-white/5 text-neutral-500 hover:text-neutral-300'
                                                 }`}
                                         >
                                             {st.label}
