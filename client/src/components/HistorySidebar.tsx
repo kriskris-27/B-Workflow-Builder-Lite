@@ -12,9 +12,10 @@ interface RecentRun {
     created_at: string;
 }
 
-export default function HistorySidebar({ onSelectRun, userId }: {
+export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
     onSelectRun: (run: RecentRun) => void,
-    userId: string
+    userId: string,
+    refreshKey?: number
 }) {
     const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,7 +58,7 @@ export default function HistorySidebar({ onSelectRun, userId }: {
         handleRefresh();
         const interval = setInterval(handleRefresh, 15000);
         return () => clearInterval(interval);
-    }, []);
+    }, [refreshKey]);
 
     return (
         <nav className="h-full flex flex-col p-10 gap-10 overflow-hidden">

@@ -16,6 +16,7 @@ import HistorySidebar from './components/HistorySidebar';
 import StatusPage from './components/StatusPage';
 import WorkflowCreator from './components/WorkflowCreator';
 import RunDashboard from './components/RunDashboard';
+import DocumentationModal from './components/DocumentationModal';
 
 export default function App() {
     const [view, setView] = useState<'dashboard' | 'creator' | 'run' | 'status'>('dashboard');
@@ -24,10 +25,12 @@ export default function App() {
     const [apiOk, setApiOk] = useState<boolean | null>(null);
     const [dbOk, setDbOk] = useState<boolean | null>(null);
     const [geminiStatus, setGeminiStatus] = useState<'connected' | 'error' | 'rate_limited' | 'checking'>('checking');
+    const [showDocs, setShowDocs] = useState(false);
 
     // Selected workflow for RunDashboard
     const [activeWorkflow, setActiveWorkflow] = useState<{ name: string, steps: any[] } | null>(null);
     const [activeRun, setActiveRun] = useState<{ input: string, result: string | null } | null>(null);
+    const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
     useEffect(() => {
         // Initialize User ID
@@ -135,6 +138,7 @@ export default function App() {
                         <HistorySidebar
                             onSelectRun={handleSelectRun}
                             userId={userId}
+                            refreshKey={historyRefreshKey}
                         />
                     </motion.aside>
                 )}
@@ -165,10 +169,13 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                            <Shield className="w-3 h-3 text-[#444]" />
-                            <span className="text-[10px] font-black tracking-widest text-[#666]">V1.2.0</span>
-                        </div>
+                        <button
+                            onClick={() => setShowDocs(true)}
+                            className="flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-all px-4 py-2 rounded-full border border-white/5 group"
+                        >
+                            <Shield className="w-3 h-3 text-[#666] group-hover:text-white transition-colors" />
+                            <span className="text-[10px] font-black tracking-widest text-[#666] group-hover:text-white transition-colors">DOCS</span>
+                        </button>
                     </div>
                 </header>
 
@@ -250,6 +257,7 @@ export default function App() {
                                     initialInput={activeRun?.input}
                                     initialResult={activeRun?.result}
                                     userId={userId}
+                                    onRunComplete={() => setHistoryRefreshKey(prev => prev + 1)}
                                 />
                             </motion.section>
                         )}
@@ -261,6 +269,10 @@ export default function App() {
                         )}
                     </AnimatePresence>
                 </section>
+
+                <AnimatePresence>
+                    {showDocs && <DocumentationModal onClose={() => setShowDocs(false)} />}
+                </AnimatePresence>
             </main>
         </div>
     );

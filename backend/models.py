@@ -15,6 +15,7 @@ class RecentRun(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     workflow_id = Column(Integer, index=True)
+    user_id = Column(String, index=True, nullable=True)
     input_data = Column(JSON)
     output_data = Column(JSON)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

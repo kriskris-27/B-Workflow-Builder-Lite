@@ -14,13 +14,15 @@ export default function RunDashboard({
     steps,
     initialInput = '',
     initialResult = null,
-    userId
+    userId,
+    onRunComplete
 }: {
     workflowName: string,
     steps: Step[],
     initialInput?: string,
     initialResult?: string | null,
-    userId: string
+    userId: string,
+    onRunComplete?: () => void
 }) {
     const [input, setInput] = useState(initialInput);
     const [loading, setLoading] = useState(false);
@@ -95,6 +97,8 @@ export default function RunDashboard({
                     output_data: currentInput
                 })
             });
+
+            if (onRunComplete) onRunComplete();
 
         } catch (err: any) {
             console.error(err);

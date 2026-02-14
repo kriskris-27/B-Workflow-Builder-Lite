@@ -12,6 +12,26 @@ import os
 
 models.Base.metadata.create_all(bind=engine)
 
+def ensure_schema_updates():
+    """Calculates if the DB needs manual column additions for user_id"""
+    try:
+        with engine.connect() as conn:
+            # Check if user_id column exists in recent_runs
+            result = conn.execute(text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_name='recent_runs' AND column_name='user_id';"
+            ))
+            if not result.fetchone():
+                print("Migrating: Adding user_id column to recent_runs")
+                conn.execute(text("ALTER TABLE recent_runs ADD COLUMN IF NOT EXISTS user_id VARCHAR;"))
+                conn.commit()
+            else:
+                print("Schema check: user_id column exists.")
+    except Exception as e:
+        print(f"Schema update warning: {e}")
+
+ensure_schema_updates()
+
 app = FastAPI()
 runner = WorkflowRunner()
 
