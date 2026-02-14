@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Terminal, CheckCircle2, Loader2, Play } from 'lucide-react';
+import { Play, Loader2, CheckCircle2, AlertCircle, Terminal, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -36,12 +36,6 @@ export default function RunDashboard({
             return;
         }
 
-        if (input.trim().length < 10) {
-            if (!confirm("Your input is very short. AI quality might be low. Continue anyway?")) {
-                return;
-            }
-        }
-
         if (loading) return;
 
         setLoading(true);
@@ -50,7 +44,6 @@ export default function RunDashboard({
         setCurrentStepIndex(0);
 
         try {
-            // 1. Ensure the workflow is saved so we have an ID
             const workflowRes = await fetch(`${API_URL}/api/workflows`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -58,14 +51,12 @@ export default function RunDashboard({
             });
 
             if (!workflowRes.ok) throw new Error("Failed to initialize workflow on server.");
-
             const dbWorkflow = await workflowRes.json();
             const workflowId = dbWorkflow.id;
 
             let currentInput = input;
             const newResults: string[] = [];
 
-            // 2. Execute steps sequentially
             for (let i = 0; i < steps.length; i++) {
                 setCurrentStepIndex(i);
                 const step = steps[i];
@@ -94,7 +85,6 @@ export default function RunDashboard({
             setResult(currentInput);
             setCurrentStepIndex(steps.length);
 
-            // 3. Record the final result in history
             await fetch(`${API_URL}/api/recent-runs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -116,145 +106,169 @@ export default function RunDashboard({
     };
 
     return (
-        <div className="flex-1 p-12 overflow-y-auto">
-            <div className="max-w-4xl mx-auto">
-                <div className="mb-12">
-                    <h1 className="text-4xl font-bold mb-4 flex items-center gap-4">
-                        <span className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
-                            <Sparkles className="w-8 h-8 text-indigo-400" />
-                        </span>
-                        Execution Lab
-                    </h1>
-                    <p className="text-neutral-500">Run <span className="text-white font-medium">{workflowName}</span> against your raw data.</p>
+        <section className="h-full flex flex-col p-16 overflow-y-auto custom-scrollbar bg-[#0a0a0a]">
+            <header className="flex items-center justify-between mb-16 shrink-0">
+                <div>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-1 bg-white" />
+                        <span className="text-xs font-black tracking-[0.4em] text-[#666] uppercase">Execution_Lab</span>
+                    </div>
+                    <h2 className="text-6xl font-black tracking-tighter uppercase">{workflowName}_IO</h2>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-[600px]">
-                    {/* Input Side */}
-                    <div className="flex flex-col gap-4">
-                        <div className="flex-1 p-8 bg-white/[0.03] border border-white/5 rounded-[2.5rem] flex flex-col">
-                            <label className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-4 flex items-center gap-2">
-                                <Terminal className="w-4 h-4" /> Input Data
-                            </label>
-                            <textarea
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Paste your text here..."
-                                className="flex-1 bg-transparent border-none outline-none resize-none text-neutral-300 placeholder:text-neutral-800 leading-relaxed font-mono"
-                            />
-                        </div>
-                        {error && (
+                <div className="flex items-center gap-10">
+                    <AnimatePresence>
+                        {loading && (
                             <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="px-6 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm font-medium"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/5"
                             >
-                                {error}
+                                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Node_{currentStepIndex + 1}_Active</span>
                             </motion.div>
                         )}
-                        <button
-                            onClick={handleRun}
-                            disabled={loading || !input.trim()}
-                            className="w-full py-6 bg-white text-black rounded-[2rem] font-bold text-lg flex items-center justify-center gap-3 transition-all hover:bg-neutral-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group shadow-2xl shadow-indigo-500/10"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-6 h-6 animate-spin" />
-                                    Processing Pipeline...
-                                </>
-                            ) : (
-                                <>
-                                    <Play className="w-6 h-6 fill-current" />
-                                    Trigger Workflow
-                                </>
-                            )}
-                        </button>
+                    </AnimatePresence>
+                    <button
+                        onClick={handleRun}
+                        disabled={loading}
+                        className="tactile-button group disabled:opacity-20"
+                    >
+                        {loading ? 'EXECUTING_CHAIN' : 'INITIALIZE_RUN'}
+                        <Play className={`w-4 h-4 fill-current ${loading ? 'animate-pulse' : ''}`} />
+                    </button>
+                </div>
+            </header>
+
+            <div className="grid grid-cols-[1fr,1.4fr] gap-12">
+                {/* Input Column */}
+                <article className="flex flex-col gap-8">
+                    <header className="flex items-center gap-3 px-4">
+                        <Terminal className="w-4 h-4 text-[#444]" />
+                        <span className="label-caps !text-[#444]">Data_Inflow</span>
+                    </header>
+                    <div className="huamish-card p-12 flex flex-col hover:border-white/20 transition-all bg-[#080808] min-h-[600px]">
+                        <textarea
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="AWAITING_INPUT_STREAM..."
+                            disabled={loading}
+                            className="w-full bg-transparent border-none outline-none resize-none text-xl font-medium text-[#aaa] placeholder:text-[#111] leading-relaxed min-h-[400px]"
+                        />
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-8 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4"
+                            >
+                                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                                <span className="text-[11px] font-black uppercase tracking-[0.1em] text-red-500 leading-tight">Error_Detected: {error}</span>
+                            </motion.div>
+                        )}
                     </div>
+                </article>
 
-                    {/* Result Side */}
-                    <div className="flex flex-col gap-4 overflow-hidden">
-                        <div className="flex-1 p-8 bg-black/40 border border-white/5 rounded-[2.5rem] flex flex-col overflow-hidden">
-                            <label className="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-6 flex items-center gap-2 px-1">
-                                <CheckCircle2 className="w-4 h-4" /> Results Pipeline
-                            </label>
+                {/* Output Column */}
+                <article className="flex flex-col gap-8">
+                    <header className="flex items-center gap-3 px-4">
+                        <Layers className="w-4 h-4 text-[#444]" />
+                        <span className="label-caps !text-[#444]">Inference_Outflow</span>
+                    </header>
+                    <div className="huamish-card p-12 flex flex-col bg-[#000] relative group min-h-[600px]">
+                        {!result && !loading && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-[0.03] group-hover:opacity-[0.05] transition-opacity duration-1000">
+                                <h1 className="text-[180px] font-black tracking-tighter leading-none text-center">IDLE</h1>
+                                <span className="label-caps">System standby</span>
+                            </div>
+                        )}
 
-                            <div className="flex-1 overflow-y-auto space-y-6 px-1 custom-scrollbar">
-                                <AnimatePresence mode="popLayout">
-                                    {!loading && !result ? (
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="h-full flex flex-col items-center justify-center text-center opacity-20 filter grayscale"
-                                        >
-                                            <ZapIcon className="w-16 h-16 mb-4 text-neutral-500" />
-                                            <p className="text-sm font-medium">Wait for execution...</p>
-                                        </motion.div>
-                                    ) : (
-                                        <>
-                                            {steps.map((step, i) => (
-                                                <motion.div
-                                                    key={i}
-                                                    initial={{ opacity: 0, x: 20 }}
-                                                    animate={{
-                                                        opacity: i <= currentStepIndex ? 1 : 0.3,
-                                                        x: 0,
-                                                    }}
-                                                    className={`p-4 rounded-2xl border transition-all ${i < currentStepIndex
-                                                        ? 'bg-green-500/5 border-green-500/20'
-                                                        : i === currentStepIndex
-                                                            ? 'bg-indigo-500/10 border-indigo-500/30'
-                                                            : 'bg-white/5 border-white/5'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Step {i + 1}</span>
-                                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${i < currentStepIndex ? 'text-green-400' :
-                                                            i === currentStepIndex ? 'text-indigo-400 animate-pulse' : 'text-neutral-700'
-                                                            }`}>
-                                                            {i < currentStepIndex ? 'Complete' : i === currentStepIndex ? 'Thinking...' : 'Pending'}
+                        <div className="relative z-10">
+                            <AnimatePresence mode="popLayout">
+                                {(loading || stepResults.length > 0) && (
+                                    <div className="space-y-6 mb-12">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-1 h-3 bg-[#222]" />
+                                            <span className="text-[10px] font-black text-[#222] uppercase tracking-[0.4em]">Inference_Trace</span>
+                                        </div>
+                                        {steps.map((step, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`p-8 rounded-[2rem] border-l-4 transition-all duration-700 ${i === currentStepIndex
+                                                    ? 'border-white bg-white/5 scale-[1.01]'
+                                                    : i < stepResults.length
+                                                        ? 'border-[#222] bg-white/[0.01]'
+                                                        : 'border-[#111] opacity-20'
+                                                    }`}
+                                            >
+                                                <div className="flex justify-between items-center mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] font-black text-[#888] tabular-nums">0{i + 1}</span>
+                                                        <span className={`text-[11px] font-black uppercase tracking-[0.2em] ${i === currentStepIndex ? 'text-white' : 'text-[#888]'}`}>
+                                                            {step.type}
                                                         </span>
                                                     </div>
-                                                    <h4 className="font-bold capitalize mb-2">{step.type}</h4>
+                                                    {i === currentStepIndex ? (
+                                                        <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                                                    ) : i < stepResults.length ? (
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500/50" />
+                                                    ) : null}
+                                                </div>
 
-                                                    {stepResults[i] && (
+                                                {i === currentStepIndex && (
+                                                    <div className="h-0.5 bg-white/5 w-full rounded-full overflow-hidden mb-4">
                                                         <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: 'auto', opacity: 1 }}
-                                                            className="mt-2 pt-2 border-t border-white/5"
-                                                        >
-                                                            <div className="text-[11px] text-neutral-400 font-mono line-clamp-3 italic leading-relaxed">
-                                                                "{stepResults[i].substring(0, 120)}..."
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </motion.div>
-                                            ))}
+                                                            className="h-full bg-white"
+                                                            animate={{ x: ["-100%", "300%"] }}
+                                                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                                                            style={{ width: "30%" }}
+                                                        />
+                                                    </div>
+                                                )}
 
-                                            {result && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className="mt-8 p-6 bg-green-500/10 border border-green-500/20 rounded-3xl"
-                                                >
-                                                    <h4 className="text-xs font-bold text-green-400 uppercase tracking-widest mb-4">Final Output</h4>
-                                                    <pre className="text-sm text-neutral-200 whitespace-pre-wrap leading-relaxed font-mono italic">
-                                                        {result}
-                                                    </pre>
-                                                </motion.div>
-                                            )}
-                                        </>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                                                {stepResults[i] && (
+                                                    <div className="mt-4 p-6 bg-black/40 border border-white/5 rounded-2xl font-mono text-[11px] leading-relaxed text-[#aaa] whitespace-pre-wrap">
+                                                        {stepResults[i]}
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {result && !loading && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.98 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="flex flex-col"
+                                    >
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-1.5 h-6 bg-white" />
+                                            <span className="label-caps !text-white !tracking-[0.4em]">MANIFEST_RESULT</span>
+                                        </div>
+                                        <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-12 font-mono text-2xl leading-relaxed text-[#eee] whitespace-pre-wrap selection:bg-white selection:text-black">
+                                            {result}
+                                        </div>
+                                        <footer className="mt-6 flex items-center justify-between border-t border-white/5 pt-6">
+                                            <span className="text-[10px] font-black text-[#666] uppercase tracking-[0.5em]">Inference complete</span>
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(result);
+                                                    alert("Result copied to clipboard.");
+                                                }}
+                                                className="text-[10px] font-black text-white/40 hover:text-white transition-colors uppercase tracking-[0.2em] bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl border border-white/5"
+                                            >
+                                                Copy_Result
+                                            </button>
+                                        </footer>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
-                </div>
+                </article>
             </div>
-        </div>
+        </section>
     );
 }
-
-const ZapIcon = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-    </svg>
-);

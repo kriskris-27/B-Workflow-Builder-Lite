@@ -1,156 +1,179 @@
-import { useState, useEffect } from 'react';
-import { Plus, Trash2, Sparkles, LayoutPanelLeft, PlayCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Trash2, Plus, Play, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface Step {
     type: "clean" | "summarize" | "extract" | "tag";
     config: Record<string, any>;
 }
 
-interface Template {
-    id: string;
-    name: string;
-    steps: Step[];
-}
-
 export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps: Step[]) => void }) {
-    const [name, setName] = useState('My New Workflow');
+    const [name, setName] = useState('UNNAMED_WORKFLOW');
     const [steps, setSteps] = useState<Step[]>([{ type: 'clean', config: {} }]);
-    const [templates, setTemplates] = useState<Template[]>([]);
 
     const stepTypes = [
-        { type: 'clean', label: '🧹 Clean', desc: 'Normalize text input' },
-        { type: 'summarize', label: '📝 Summarize', desc: 'Create a concise brief' },
-        { type: 'extract', label: '🔍 Extract', desc: 'Pull key entities' },
-        { type: 'tag', label: '🏷️ Tag', desc: 'Categorize content' }
-    ];
+        { type: 'clean', label: 'CLEAN', desc: 'Normalize text input' },
+        { type: 'summarize', label: 'SUMMARIZE', desc: 'Create a concise brief' },
+        { type: 'extract', label: 'EXTRACT', desc: 'Pull key entities' },
+        { type: 'tag', label: 'TAG', desc: 'Categorize content' }
+    ] as const;
 
-    useEffect(() => {
-        fetch(`${API_URL}/api/templates`)
-            .then(res => res.json())
-            .then(setTemplates);
-    }, []);
+    const templates = [
+        { name: 'INSIGHT_EXTRACTOR', steps: [{ type: 'clean' }, { type: 'extract' }, { type: 'tag' }] },
+        { name: 'BRIEF_GENERATOR', steps: [{ type: 'clean' }, { type: 'summarize' }] },
+        { name: 'FULL_PIPELINE', steps: [{ type: 'clean' }, { type: 'summarize' }, { type: 'extract' }, { type: 'tag' }] }
+    ] as const;
 
-    const addStep = () => {
-        if (steps.length < 4) {
-            setSteps([...steps, { type: 'summarize', config: {} }]);
-        }
+    const applyTemplate = (t: typeof templates[number]) => {
+        setName(t.name);
+        setSteps(t.steps.map(s => ({ ...s, config: {} })) as Step[]);
     };
 
     const removeStep = (index: number) => {
         setSteps(steps.filter((_, i) => i !== index));
     };
 
-    const updateStep = (index: number, type: Step['type']) => {
-        const newSteps = [...steps];
-        newSteps[index].type = type;
-        setSteps(newSteps);
-    };
-
-    const applyTemplate = (template: Template) => {
-        setName(template.name);
-        setSteps(template.steps);
-    };
-
     return (
-        <div className="flex-1 p-12 overflow-y-auto">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex items-center justify-between mb-12">
-                    <div className="flex-1">
+        <section className="h-full flex flex-col p-10 overflow-y-auto custom-scrollbar bg-[#0a0a0a]">
+            <header className="flex items-center justify-between mb-10 shrink-0">
+                <div>
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-12 h-0.5 bg-white/20" />
+                        <span className="text-[10px] font-black tracking-[0.4em] text-[#444] uppercase">Logic_Environment</span>
+                    </div>
+                    <h2 className="text-5xl font-black tracking-tighter">INITIALIZE_LOGIC</h2>
+                </div>
+                <button
+                    onClick={() => onRun(name, steps)}
+                    className="tactile-button group h-16 px-10 text-base"
+                >
+                    DEPLOY_RUNNER
+                    <Play className="w-5 h-5 fill-current" />
+                </button>
+            </header>
+
+            <div className="grid grid-cols-[1.1fr,1.0fr] gap-12">
+                <main className="flex flex-col gap-6">
+                    <div className="p-10 bg-[#0c0c0c] border border-white/5 rounded-[2rem] shadow-soft">
+                        <label className="label-caps mb-4 block !text-[#444] text-[10px]">Manifest_Identifier</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="text-4xl font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-2 -ml-2 w-full transition-all"
+                            className="w-full bg-transparent border-none text-5xl font-black outline-none placeholder:text-[#111] tracking-tighter uppercase focus:text-white transition-colors"
                         />
-                        <p className="text-neutral-500 mt-2">Design your multi-step AI processing pipeline.</p>
                     </div>
-                    <button
-                        onClick={() => onRun(name, steps)}
-                        className="flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
-                    >
-                        <PlayCircle className="w-5 h-5" />
-                        Build & Run
-                    </button>
-                </div>
 
-                {/* Templates */}
-                <div className="mb-12">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-500 mb-6 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" /> Quick Templates
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {templates.map(t => (
-                            <button
-                                key={t.id}
-                                onClick={() => applyTemplate(t)}
-                                className="p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all text-left group"
-                            >
-                                <h3 className="font-bold text-sm mb-1 group-hover:text-indigo-400 transition-colors">{t.name}</h3>
-                                <p className="text-[10px] text-neutral-500 uppercase">{t.steps.length} Steps</p>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-4">
+                            <label className="label-caps !text-[#444] text-[12px]">Instruction_Chain</label>
+                            <span className="text-[11px] font-black text-[#222] uppercase tracking-[0.3em]">{steps.length} / 4 NODES_ACTIVE</span>
+                        </div>
 
-                {/* Builder */}
-                <div className="space-y-4">
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-500 mb-6 flex items-center gap-2">
-                        <LayoutPanelLeft className="w-4 h-4" /> Workflow Steps
-                    </h2>
-                    <AnimatePresence mode="popLayout">
-                        {steps.map((step, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="relative group p-6 bg-white/[0.03] border border-white/5 rounded-[2.5rem] flex items-center gap-6 hover:bg-white/[0.05] transition-all"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-bold text-neutral-500 border border-white/5">
-                                    {index + 1}
-                                </div>
-
-                                <div className="grid grid-cols-4 gap-2 flex-1">
-                                    {stepTypes.map(st => (
-                                        <button
-                                            key={st.type}
-                                            onClick={() => updateStep(index, st.type as Step['type'])}
-                                            className={`p-3 rounded-2xl text-xs font-bold transition-all ${step.type === st.type
-                                                ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                                                : 'bg-white/5 text-neutral-500 hover:text-neutral-300'
-                                                }`}
-                                        >
-                                            {st.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {steps.length > 1 && (
+                        <AnimatePresence mode="popLayout">
+                            {steps.map((step, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    className="group p-8 bg-[#0c0c0c] border border-white/5 rounded-[2rem] flex items-center justify-between hover:border-white/10 hover:bg-[#111] transition-all active:scale-[0.99]"
+                                >
+                                    <div className="flex items-center gap-10">
+                                        <span className="text-6xl font-black text-[#1a1a1a] group-hover:text-white transition-all duration-700 tabular-nums">0{idx + 1}</span>
+                                        <div>
+                                            <h4 className="text-2xl font-black uppercase tracking-tight group-hover:text-white transition-colors mb-1">{step.type.toUpperCase()}</h4>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+                                                <p className="text-[#444] text-[10px] font-black uppercase tracking-widest">Active_Segment</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button
-                                        onClick={() => removeStep(index)}
-                                        className="p-3 text-neutral-700 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                        onClick={() => removeStep(idx)}
+                                        className="p-5 hover:bg-red-500/10 rounded-3xl text-[#222] hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                                     >
-                                        <Trash2 className="w-5 h-5" />
+                                        <Trash2 className="w-6 h-6" />
                                     </button>
-                                )}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
 
-                    {steps.length < 4 && (
-                        <button
-                            onClick={addStep}
-                            className="w-full py-8 border-2 border-dashed border-white/5 rounded-[2.5rem] hover:border-white/20 hover:bg-white/5 text-neutral-600 hover:text-neutral-400 transition-all font-bold flex items-center justify-center gap-2 group"
-                        >
-                            <Plus className="group-hover:rotate-90 transition-transform" />
-                            Add Pipeline Step
-                        </button>
-                    )}
-                </div>
+                        {steps.length === 0 && (
+                            <div className="py-32 border-2 border-dashed border-white/5 rounded-[3rem] flex flex-col items-center justify-center text-[#1a1a1a]">
+                                <Info className="w-16 h-16 mb-6 opacity-20" />
+                                <span className="text-sm font-black uppercase tracking-[0.5em]">System_Awaiting_Nodes</span>
+                            </div>
+                        )}
+                    </div>
+                </main>
+
+
+                <aside className="bg-[#0c0c0c] border border-white/5 rounded-[2.5rem] p-10 flex flex-col gap-10 shadow-tactile">
+                    <header>
+                        <h3 className="label-caps mb-4 text-[12px] !text-white tracking-[0.3em]">Ready_Templates</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {templates.map((t) => (
+                                <button
+                                    key={t.name}
+                                    onClick={() => applyTemplate(t)}
+                                    className="px-4 py-2 bg-white/5 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:border-white/10 transition-all active:scale-95 text-[#666] hover:text-white"
+                                >
+                                    {t.name}
+                                </button>
+                            ))}
+                        </div>
+                    </header>
+
+                    <div className="h-px bg-white/5 w-full" />
+
+                    <header>
+                        <h3 className="label-caps mb-3 text-[12px] !text-white">Node_Palette</h3>
+                        <p className="text-base text-[#444] font-medium leading-relaxed max-w-sm">Select inference modules to orchestrate your workflow.</p>
+                    </header>
+
+                    <div className="grid grid-cols-2 gap-6 flex-1">
+                        {stepTypes.map((st) => {
+                            const isActive = steps.some(s => s.type === st.type);
+                            return (
+                                <button
+                                    key={st.type}
+                                    onClick={() => steps.length < 4 && !isActive && setSteps([...steps, { type: st.type as any, config: {} }])}
+                                    className={`p-8 border border-white/5 rounded-[2rem] text-left transition-all group flex flex-col justify-between
+                                        ${isActive
+                                            ? 'bg-white/[0.02] opacity-40 cursor-not-allowed grayscale'
+                                            : 'bg-[#080808] hover:bg-white/5 hover:border-white/10 hover:shadow-[0_0_40px_rgba(255,255,255,0.02)] active:scale-[0.98]'
+                                        }`}
+                                    disabled={steps.length >= 4 || isActive}
+                                >
+                                    <div className="flex items-center justify-between mb-6">
+                                        <span className="text-[10px] font-black text-[#555] group-hover:text-white transition-colors uppercase tracking-[0.2em]">{st.type}</span>
+                                        <div className={`w-8 h-8 rounded-full border border-white/5 flex items-center justify-center transition-all ${isActive ? 'bg-white/10' : 'group-hover:bg-white group-hover:text-black'}`}>
+                                            {isActive ? <div className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <Plus className="w-4 h-4" />}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h5 className="font-black text-2xl group-hover:text-white transition-colors uppercase tracking-tight ">{st.label}</h5>
+                                            {isActive && <span className="text-[8px] font-black text-white/40 uppercase tracking-widest bg-white/10 px-2 py-1 rounded-md">Active</span>}
+                                        </div>
+                                        <p className="text-[10px] text-[#888] group-hover:text-[#aaa] font-medium leading-tight">{st.desc}</p>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="mt-auto pt-10 border-t border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-6 text-[11px] font-black text-[#666] uppercase tracking-widest">
+                            <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#666]" /> V.2.4</span>
+                            <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#666]" /> SLA_READY</span>
+                        </div>
+                        <Info className="w-5 h-5 text-[#444]" />
+                    </div>
+                </aside>
             </div>
-        </div>
+        </section>
     );
 }

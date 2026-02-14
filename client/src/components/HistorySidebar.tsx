@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Clock, ListPlus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, Trash2, ArrowRight } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
 
 interface RecentRun {
     id: number;
@@ -21,17 +19,12 @@ export default function HistorySidebar({ onSelectRun, userId }: {
     const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchHistory = async () => {
-        // No longer showing static history, but keeping the refresh logic for runs
-        fetchRecentRuns();
-    };
-
     const fetchRecentRuns = async () => {
         try {
             const res = await fetch(`${API_URL}/api/recent-runs?user_id=${userId}`);
             if (res.ok) {
                 const data = await res.json();
-                setRecentRuns(data); // Backend now limits to 10
+                setRecentRuns(data);
             }
         } catch (err) {
             console.error("Failed to fetch recent runs", err);
@@ -41,8 +34,8 @@ export default function HistorySidebar({ onSelectRun, userId }: {
     };
 
     const handleRefresh = () => {
-        setLoading(true); // Set loading to true before fetching
-        fetchRecentRuns(); // Only need to fetch recent runs now
+        setLoading(true);
+        fetchRecentRuns();
     };
 
     const clearRecentRuns = async () => {
@@ -67,73 +60,60 @@ export default function HistorySidebar({ onSelectRun, userId }: {
     }, []);
 
     return (
-        <div className="w-80 bg-black/40 backdrop-blur-3xl flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-indigo-400" />
-                    <h2 className="font-bold text-sm uppercase tracking-widest text-neutral-400">Run History</h2>
+        <nav className="h-full flex flex-col p-10 gap-10 overflow-hidden">
+            <header className="flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-4 bg-white" />
+                    <h3 className="text-xs font-black tracking-[0.3em] text-[#444] uppercase">Archive</h3>
                 </div>
                 <button
-                    onClick={handleRefresh}
-                    className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                    title="Refresh history"
-                >
-                    <motion.div whileTap={{ rotate: 180 }}>
-                        <ListPlus className="w-4 h-4 text-neutral-500" />
-                    </motion.div>
-                </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                <AnimatePresence mode="popLayout">
-                    {loading ? (
-                        [1, 2, 3].map(i => (
-                            <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse" />
-                        ))
-                    ) : recentRuns.length === 0 ? (
-                        <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-                            <p className="text-xs text-indigo-300 leading-relaxed font-medium">
-                                Click any run to view the full input and generated output.
-                            </p>
-                        </div>
-                    ) : (
-                        recentRuns.map((r) => (
-                            <motion.div
-                                key={r.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                whileHover={{ x: 4 }}
-                                onClick={() => onSelectRun(r)}
-                                className="w-full group p-4 bg-white/[0.03] border border-white/[0.05] rounded-2xl flex flex-col hover:bg-white/10 hover:border-white/20 transition-all text-left cursor-pointer"
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-semibold text-xs truncate text-white/90 group-hover:text-white transition-colors">
-                                        {r.workflow_name || `Run #${r.id}`}
-                                    </h3>
-                                    <span className="text-[9px] text-neutral-600 font-bold uppercase tabular-nums">
-                                        {new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
-                                <div className="p-2 bg-black/20 rounded-lg border border-white/5">
-                                    <p className="text-[11px] text-neutral-400 line-clamp-2 italic font-mono">
-                                        {typeof r.output_data === 'string' ? r.output_data : JSON.stringify(r.output_data)}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))
-                    )}
-                </AnimatePresence>
-            </div>
-
-            <div className="p-6 border-t border-white/5 mt-auto">
-                <button
                     onClick={clearRecentRuns}
-                    className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-bold transition-all active:scale-[0.98]"
+                    className="group flex items-center gap-2 text-[10px] font-black text-[#444] hover:text-red-500 transition-colors uppercase tracking-[0.2em]"
                 >
-                    Clear History
+                    <Trash2 className="w-3 h-3 translate-y-[-1px]" />
+                    Flush
                 </button>
+            </header>
+
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                {loading && recentRuns.length === 0 ? (
+                    <div className="py-20 flex flex-col items-center gap-4 text-[#222]">
+                        <Clock className="w-8 h-8 animate-spin" strokeWidth={1} />
+                        <span className="text-[10px] font-black uppercase tracking-widest animate-pulse">Scanning_Nodes...</span>
+                    </div>
+                ) : recentRuns.length === 0 ? (
+                    <div className="py-24 text-center">
+                        <div className="text-[#1a1a1a] font-black text-8xl mb-8 tracking-tighter">0%</div>
+                        <p className="text-[#333] text-[10px] font-black uppercase tracking-[0.2em]">Null history segment</p>
+                    </div>
+                ) : (
+                    recentRuns.map((run) => (
+                        <div
+                            key={run.id}
+                            onClick={() => onSelectRun(run)}
+                            className="group p-8 bg-[#0c0c0c] border border-white/5 rounded-2xl cursor-pointer hover:border-white/10 hover:bg-[#111] transition-all relative overflow-hidden active:scale-[0.98]"
+                        >
+                            <div className="relative z-10">
+                                <header className="flex items-center justify-between mb-4">
+                                    <span className="text-[10px] font-black text-[#555] group-hover:text-white transition-colors tracking-[0.2em] uppercase">
+                                        {run.workflow_name || 'UNDEFINED_NODE'}
+                                    </span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-[#222] group-hover:text-white transition-all transform group-hover:translate-x-1" />
+                                </header>
+                                <p className="text-[12px] text-[#444] group-hover:text-[#888] line-clamp-2 mb-4 font-mono leading-relaxed">
+                                    {typeof run.input_data === 'string' ? run.input_data : JSON.stringify(run.input_data)}
+                                </p>
+                                <footer className="flex items-center justify-between">
+                                    <span className="text-[9px] font-black text-[#222] group-hover:text-[#444] transition-colors tabular-nums">
+                                        {new Date(run.created_at).toLocaleTimeString()}
+                                    </span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/5 group-hover:bg-white transition-colors" />
+                                </footer>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
-        </div>
+        </nav>
     );
 }
