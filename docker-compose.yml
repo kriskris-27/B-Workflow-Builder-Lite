@@ -8,8 +8,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - NEON_DATABASE_URL=${NEON_DATABASE_URL:-postgresql://user:password@db:5432/workflow_db}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PYTHONUNBUFFERED=1
     depends_on:
       db:
         condition: service_healthy
@@ -33,7 +32,7 @@ services:
     env_file:
       - ./client/.env
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - NODE_ENV=development
     depends_on:
       - backend
     develop:

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Literal
+from typing import List, Literal, Optional
+import datetime
 
 class Step(BaseModel):
     type: Literal["clean", "summarize", "extract", "tag"]
@@ -14,6 +15,7 @@ class WorkflowCreate(WorkflowBase):
 
 class Workflow(WorkflowBase):
     id: int
+    created_at: datetime.datetime
 
     class Config:
         from_attributes = True

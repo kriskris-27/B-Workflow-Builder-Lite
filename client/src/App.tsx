@@ -3,28 +3,52 @@ import { useState, useEffect } from 'react'
 export default function App() {
     const [apiOk, setApiOk] = useState<boolean | null>(null)
     const [dbOk, setDbOk] = useState<boolean | null>(null)
+    const [geminiOk, setGeminiOk] = useState<boolean | null>(null)
 
     useEffect(() => {
         const checkHealth = async () => {
+            // 1. Check Backend API
             try {
                 const apiRes = await fetch('http://localhost:8000/health')
                 setApiOk(apiRes.ok)
-            } catch {
-                setApiOk(false)
-            }
+            } catch { setApiOk(false) }
 
+            // 2. Check Database
             try {
                 const dbRes = await fetch('http://localhost:8000/health/db')
                 setDbOk(dbRes.ok)
-            } catch {
-                setDbOk(false)
+            } catch { setDbOk(false) }
+
+            // 3. Check Gemini - only if we haven't succeeded yet
+            if (geminiOk !== true) {
+                try {
+                    const geminiRes = await fetch('http://localhost:8000/health/gemini')
+                    const data = await geminiRes.json()
+
+                    if (data.ok) {
+                        setGeminiOk(true)
+                    } else if (data.status === 'rate_limited') {
+                        // If rate limited, set to false but DON'T keep hitting it
+                        setGeminiOk(false)
+                        console.warn("Gemini Rate Limit hit. Polling paused.")
+                    } else {
+                        setGeminiOk(false)
+                    }
+                } catch {
+                    setGeminiOk(false)
+                }
             }
         }
 
         checkHealth()
-        const interval = setInterval(checkHealth, 5000)
+
+        // Only keep polling if Gemini isn't working yet
+        const interval = setInterval(() => {
+            if (geminiOk !== true) checkHealth()
+        }, 10000) // Slower 10s interval for safety
+
         return () => clearInterval(interval)
-    }, [])
+    }, [geminiOk])
 
     return (
         <div className="min-h-screen bg-neutral-950 text-white selection:bg-indigo-500/30 font-sans">
@@ -53,6 +77,10 @@ export default function App() {
                             <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${dbOk ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'} transition-all duration-500`} />
                                 <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500">DB</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${geminiOk ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'} transition-all duration-500`} />
+                                <span className="text-[10px] uppercase tracking-widest font-bold text-neutral-500">AI</span>
                             </div>
                         </div>
                     </div>
