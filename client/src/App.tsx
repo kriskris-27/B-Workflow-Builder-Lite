@@ -9,20 +9,28 @@ import StatusPage from './components/StatusPage';
 import WorkflowCreator from './components/WorkflowCreator';
 import RunDashboard from './components/RunDashboard';
 
-type View = 'dashboard' | 'creator' | 'run' | 'status';
 
 export default function App() {
-    const [view, setView] = useState<View>('dashboard');
+    const [view, setView] = useState<'dashboard' | 'creator' | 'run' | 'status'>('dashboard');
     const [showHistory, setShowHistory] = useState(true);
+    const [userId, setUserId] = useState<string>('');
     const [apiOk, setApiOk] = useState<boolean | null>(null);
     const [dbOk, setDbOk] = useState<boolean | null>(null);
     const [geminiStatus, setGeminiStatus] = useState<'connected' | 'error' | 'rate_limited' | 'checking'>('checking');
 
     // Selected workflow for RunDashboard
     const [activeWorkflow, setActiveWorkflow] = useState<{ name: string, steps: any[] } | null>(null);
-    const [activeRun, setActiveRun] = useState<{ input: string, result: string } | null>(null);
+    const [activeRun, setActiveRun] = useState<{ input: string, result: string | null } | null>(null);
 
     useEffect(() => {
+        // Initialize User ID
+        let id = localStorage.getItem('aggrosso_user_id');
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem('aggrosso_user_id', id);
+        }
+        setUserId(id);
+
         const checkHealth = async () => {
             try {
                 const apiRes = await fetch(`${API_URL}/health`);
@@ -123,6 +131,7 @@ export default function App() {
                     >
                         <HistorySidebar
                             onSelectRun={handleSelectRun}
+                            userId={userId}
                         />
                     </motion.div>
                 )}
@@ -165,20 +174,47 @@ export default function App() {
                                 initial={{ opacity: 0, scale: 0.98 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.98 }}
-                                className="flex-1 p-12 flex flex-col items-center justify-center text-center max-w-2xl mx-auto"
+                                className="flex-1 p-12 overflow-y-auto"
                             >
-                                <h1 className="text-6xl font-bold mb-6 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">
-                                    Welcome to Workflow Builder
-                                </h1>
-                                <p className="text-xl text-neutral-500 mb-12 leading-relaxed">
-                                    Our AI-powered engine is ready. Build a new pipeline or select a previous run from the history to get started.
-                                </p>
-                                <button
-                                    onClick={() => setView('creator')}
-                                    className="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold text-lg transition-all hover:shadow-[0_0_50px_-10px_rgba(79,70,229,0.4)]"
-                                >
-                                    Build New Workflow
-                                </button>
+                                <div className="max-w-4xl mx-auto flex flex-col items-center justify-center text-center">
+                                    <h1 className="text-6xl font-bold mb-6 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">
+                                        Welcome to Workflow Builder
+                                    </h1>
+                                    <p className="text-xl text-neutral-500 mb-12 leading-relaxed max-w-2xl">
+                                        Our AI-powered engine is ready. Build a new pipeline or select a previous run from the history to get started.
+                                    </p>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 w-full">
+                                        <div className="p-8 bg-white/[0.03] border border-white/5 rounded-[2.5rem] flex flex-col items-center group hover:bg-white/[0.05] transition-all">
+                                            <div className="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                                                <PlusCircle className="w-6 h-6 text-indigo-400" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2 text-white/90">Define Steps</h3>
+                                            <p className="text-sm text-neutral-500 leading-relaxed">Choose from AI actions like Clean, Summarize, or Extract.</p>
+                                        </div>
+                                        <div className="p-8 bg-white/[0.03] border border-white/5 rounded-[2.5rem] flex flex-col items-center group hover:bg-white/[0.05] transition-all">
+                                            <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20 group-hover:scale-110 transition-transform">
+                                                <PulseIcon className="w-6 h-6 text-purple-400" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2 text-white/90">Provide Data</h3>
+                                            <p className="text-sm text-neutral-500 leading-relaxed">Paste your raw text into the Execution Lab.</p>
+                                        </div>
+                                        <div className="p-8 bg-white/[0.03] border border-white/5 rounded-[2.5rem] flex flex-col items-center group hover:bg-white/[0.05] transition-all">
+                                            <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                                                <LayoutDashboard className="w-6 h-6 text-blue-400" />
+                                            </div>
+                                            <h3 className="font-bold text-lg mb-2 text-white/90">Get Insights</h3>
+                                            <p className="text-sm text-neutral-500 leading-relaxed">Review the AI-generated results in your dashboard.</p>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setView('creator')}
+                                        className="px-12 py-6 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold text-lg transition-all hover:shadow-[0_0_50px_-10px_rgba(79,70,229,0.4)] active:scale-95"
+                                    >
+                                        Start Building
+                                    </button>
+                                </div>
                             </motion.div>
                         )}
 
@@ -191,10 +227,12 @@ export default function App() {
                         {view === 'run' && activeWorkflow && (
                             <motion.div key={`run-${activeWorkflow.name}-${activeRun?.result || 'new'}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 overflow-hidden">
                                 <RunDashboard
+                                    key={activeRun ? JSON.stringify(activeRun) : 'new'}
                                     workflowName={activeWorkflow.name}
                                     steps={activeWorkflow.steps}
                                     initialInput={activeRun?.input}
                                     initialResult={activeRun?.result}
+                                    userId={userId}
                                 />
                             </motion.div>
                         )}

@@ -27,5 +27,6 @@ class StepRunRequest(BaseModel):
 
 class RecentRunCreate(BaseModel):
     workflow_id: int
+    user_id: Optional[str] = None
     input_data: Any
     output_data: Any

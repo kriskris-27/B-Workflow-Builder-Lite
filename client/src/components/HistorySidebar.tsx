@@ -4,12 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-interface Workflow {
-    id: number;
-    name: string;
-    created_at: string;
-    steps: any[];
-}
 
 interface RecentRun {
     id: number;
@@ -20,8 +14,9 @@ interface RecentRun {
     created_at: string;
 }
 
-export default function HistorySidebar({ onSelectRun }: {
-    onSelectRun: (run: RecentRun) => void
+export default function HistorySidebar({ onSelectRun, userId }: {
+    onSelectRun: (run: RecentRun) => void,
+    userId: string
 }) {
     const [recentRuns, setRecentRuns] = useState<RecentRun[]>([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +28,7 @@ export default function HistorySidebar({ onSelectRun }: {
 
     const fetchRecentRuns = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/recent-runs`);
+            const res = await fetch(`${API_URL}/api/recent-runs?user_id=${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 setRecentRuns(data); // Backend now limits to 10
@@ -53,7 +48,7 @@ export default function HistorySidebar({ onSelectRun }: {
     const clearRecentRuns = async () => {
         if (!confirm("Are you sure you want to clear your execution history?")) return;
         try {
-            const res = await fetch(`${API_URL}/api/recent-runs`, {
+            const res = await fetch(`${API_URL}/api/recent-runs?user_id=${userId}`, {
                 method: 'DELETE',
             });
             if (res.ok) {

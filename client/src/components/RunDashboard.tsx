@@ -13,21 +13,36 @@ export default function RunDashboard({
     workflowName,
     steps,
     initialInput = '',
-    initialResult = null
+    initialResult = null,
+    userId
 }: {
     workflowName: string,
     steps: Step[],
     initialInput?: string,
-    initialResult?: string | null
+    initialResult?: string | null,
+    userId: string
 }) {
     const [input, setInput] = useState(initialInput);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<string | null>(initialResult);
     const [currentStepIndex, setCurrentStepIndex] = useState(initialResult ? steps.length : -1);
-    const [stepResults, setStepResults] = useState<string[]>(initialResult ? [initialResult] : []); // Simple placeholder for view mode
+    const [stepResults, setStepResults] = useState<string[]>(initialResult ? [initialResult] : []);
+    const [error, setError] = useState<string | null>(null);
 
     const handleRun = async () => {
-        if (!input.trim() || loading) return;
+        setError(null);
+        if (!input.trim()) {
+            setError("Input data cannot be empty.");
+            return;
+        }
+
+        if (input.trim().length < 10) {
+            if (!confirm("Your input is very short. AI quality might be low. Continue anyway?")) {
+                return;
+            }
+        }
+
+        if (loading) return;
 
         setLoading(true);
         setResult(null);
@@ -41,6 +56,9 @@ export default function RunDashboard({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: workflowName, steps })
             });
+
+            if (!workflowRes.ok) throw new Error("Failed to initialize workflow on server.");
+
             const dbWorkflow = await workflowRes.json();
             const workflowId = dbWorkflow.id;
 
@@ -62,7 +80,10 @@ export default function RunDashboard({
                     })
                 });
 
-                if (!res.ok) throw new Error(`Step ${i + 1} failed`);
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || `Step ${i + 1} (${step.type}) failed`);
+                }
 
                 const data = await res.json();
                 currentInput = data.result;
@@ -79,6 +100,7 @@ export default function RunDashboard({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     workflow_id: workflowId,
+                    user_id: userId,
                     input_data: input,
                     output_data: currentInput
                 })
@@ -86,7 +108,8 @@ export default function RunDashboard({
 
         } catch (err: any) {
             console.error(err);
-            setResult(`Error: ${err.message || "Failed to execute workflow."}`);
+            setError(err.message || "Failed to execute workflow.");
+            setResult(null);
         } finally {
             setLoading(false);
         }
@@ -119,6 +142,15 @@ export default function RunDashboard({
                                 className="flex-1 bg-transparent border-none outline-none resize-none text-neutral-300 placeholder:text-neutral-800 leading-relaxed font-mono"
                             />
                         </div>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="px-6 py-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm font-medium"
+                            >
+                                {error}
+                            </motion.div>
+                        )}
                         <button
                             onClick={handleRun}
                             disabled={loading || !input.trim()}

@@ -211,22 +211,27 @@ async def run_step(request: schemas.StepRunRequest):
         raise HTTPException(status_code=500, detail=f"Step execution failed: {str(e)}")
 
 @app.delete("/api/recent-runs")
-def clear_recent_runs(db: Session = Depends(database.get_db)):
+def clear_recent_runs(user_id: Optional[str] = None, db: Session = Depends(database.get_db)):
     try:
-        db.query(models.RecentRun).delete()
+        query = db.query(models.RecentRun)
+        if user_id:
+            query = query.filter(models.RecentRun.user_id == user_id)
+        query.delete(synchronize_session=False)
         db.commit()
-        return {"message": "All recent runs cleared successfully"}
+        return {"message": "Recent runs cleared successfully"}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to clear recent runs")
 
 @app.get("/api/recent-runs")
-def get_recent_runs(db: Session = Depends(database.get_db)):
+def get_recent_runs(user_id: Optional[str] = None, db: Session = Depends(database.get_db)):
     try:
-        # Join RecentRun with Workflow to get the workflow name for the UI
-        runs = db.query(models.RecentRun).order_by(models.RecentRun.created_at.desc()).limit(10).all()
+        query = db.query(models.RecentRun)
+        if user_id:
+            query = query.filter(models.RecentRun.user_id == user_id)
         
-        # Manually attach workflow names for simplicity in this demo
+        runs = query.order_by(models.RecentRun.created_at.desc()).limit(10).all()
+        
         result = []
         for r in runs:
             wf = db.query(models.Workflow).filter(models.Workflow.id == r.workflow_id).first()
@@ -247,6 +252,7 @@ def add_recent_run(recent_run: schemas.RecentRunCreate, db: Session = Depends(da
     try:
         new_run = models.RecentRun(
             workflow_id=recent_run.workflow_id,
+            user_id=recent_run.user_id,
             input_data=recent_run.input_data,
             output_data=recent_run.output_data
         )
