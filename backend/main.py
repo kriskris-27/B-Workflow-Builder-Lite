@@ -188,3 +188,11 @@ async def run_workflow(workflow_id: int, initial_data: str, db: Session = Depend
         return {"result": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Workflow execution failed")
+
+@app.post("/api/workflows/run-step")
+async def run_step(request: schemas.StepRunRequest):
+    try:
+        result = await runner.run_step(request.step_type, request.input_data, request.config or {})
+        return {"result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Step execution failed: {str(e)}")

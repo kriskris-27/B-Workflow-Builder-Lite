@@ -19,3 +19,8 @@ class Workflow(WorkflowBase):
 
     class Config:
         from_attributes = True
+
+class StepRunRequest(BaseModel):
+    step_type: str
+    input_data: str
+    config: Optional[dict] = {}
