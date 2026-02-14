@@ -1,4 +1,4 @@
-import { Activity, ShieldCheck, Database, Zap, RefreshCw, Server, Cpu } from 'lucide-react';
+import { ShieldCheck, Database, RefreshCw, Server, Cpu } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface StatusItemProps {
