@@ -156,8 +156,8 @@ export default function RunDashboard({
                 {/* Input Column */}
                 <article className="flex flex-col gap-8">
                     <header className="flex items-center gap-3 px-4">
-                        <Terminal className="w-4 h-4 text-[#444]" />
-                        <span className="label-caps !text-[#444]">Data_Inflow</span>
+                        <Terminal className="w-4 h-4 text-[#808080]" />
+                        <span className="label-caps !text-[#808080]">Data_Inflow</span>
                     </header>
                     <div className="huamish-card p-12 flex flex-col hover:border-white/20 transition-all bg-[#080808] min-h-[600px]">
                         <textarea
@@ -200,8 +200,8 @@ export default function RunDashboard({
                 {/* Output Column */}
                 <article className="flex flex-col gap-8">
                     <header className="flex items-center gap-3 px-4">
-                        <Layers className="w-4 h-4 text-[#444]" />
-                        <span className="label-caps !text-[#444]">Inference_Outflow</span>
+                        <Layers className="w-4 h-4 text-[#808080]" />
+                        <span className="label-caps !text-[#808080]">Inference_Outflow</span>
                     </header>
                     <div className="huamish-card p-12 flex flex-col bg-[#000] relative group min-h-[600px]">
                         {!result && !loading && (

@@ -54,7 +54,7 @@ export default function StatusPage({ apiOk, dbOk, geminiStatus }: {
                     <div>
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-1 bg-white" />
-                            <span className="text-xs font-black tracking-[0.4em] text-[#444] uppercase">Infrastructure</span>
+                            <span className="text-xs font-black tracking-[0.4em] text-[#808080] uppercase">Infrastructure</span>
                         </div>
                         <h1 className="text-6xl font-black tracking-tighter">System_Status</h1>
                     </div>

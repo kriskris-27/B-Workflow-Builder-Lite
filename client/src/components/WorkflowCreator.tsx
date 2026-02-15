@@ -39,7 +39,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
                 <div>
                     <div className="flex items-center gap-4 mb-2">
                         <div className="w-12 h-0.5 bg-white/20" />
-                        <span className="text-[10px] font-black tracking-[0.4em] text-[#444] uppercase">Logic_Environment</span>
+                        <span className="text-[10px] font-black tracking-[0.4em] text-[#808080] uppercase">Logic_Environment</span>
                     </div>
                     <h2 className="text-5xl font-black tracking-tighter">INITIALIZE_LOGIC</h2>
                 </div>
@@ -55,7 +55,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
             <div className="grid grid-cols-[1.1fr,1.0fr] gap-12">
                 <main className="flex flex-col gap-6">
                     <div className="p-10 bg-[#0c0c0c] border border-white/5 rounded-[2rem] shadow-soft">
-                        <label className="label-caps mb-4 block !text-[#444] text-[10px]">Manifest_Identifier</label>
+                        <label className="label-caps mb-4 block !text-[#808080] text-[10px]">Manifest_Identifier</label>
                         <input
                             type="text"
                             value={name}
@@ -66,7 +66,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
 
                     <div className="space-y-6">
                         <div className="flex items-center justify-between px-4">
-                            <label className="label-caps !text-[#444] text-[12px]">Instruction_Chain</label>
+                            <label className="label-caps !text-[#808080] text-[12px]">Instruction_Chain</label>
                             <span className="text-[11px] font-black text-[#222] uppercase tracking-[0.3em]">{steps.length} / 4 NODES_ACTIVE</span>
                         </div>
 
@@ -86,7 +86,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
                                             <h4 className="text-2xl font-black uppercase tracking-tight group-hover:text-white transition-colors mb-1">{step.type.toUpperCase()}</h4>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
-                                                <p className="text-[#444] text-[10px] font-black uppercase tracking-widest">Active_Segment</p>
+                                                <p className="text-[#808080] text-[10px] font-black uppercase tracking-widest">Active_Segment</p>
                                             </div>
                                         </div>
                                     </div>
@@ -130,7 +130,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
 
                     <header>
                         <h3 className="label-caps mb-3 text-[12px] !text-white">Node_Palette</h3>
-                        <p className="text-base text-[#444] font-medium leading-relaxed max-w-sm">Select inference modules to orchestrate your workflow.</p>
+                        <p className="text-base text-[#808080] font-medium leading-relaxed max-w-sm">Select inference modules to orchestrate your workflow.</p>
                     </header>
 
                     <div className="grid grid-cols-2 gap-6 flex-1">
@@ -170,7 +170,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
                             <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#666]" /> V.2.4</span>
                             <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-[#666]" /> SLA_READY</span>
                         </div>
-                        <Info className="w-5 h-5 text-[#444]" />
+                        <Info className="w-5 h-5 text-[#808080]" />
                     </div>
                 </aside>
             </div>

@@ -121,7 +121,7 @@ export default function DocumentationModal({ onClose }: { onClose: () => void })
                     </div>
                 </div>
 
-                <footer className="p-6 border-t border-white/10 bg-[#0f0f0f] flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-[#444]">
+                <footer className="p-6 border-t border-white/10 bg-[#0f0f0f] flex justify-between items-center text-[10px] uppercase font-black tracking-widest text-[#808080]">
                     <span>Aggrosso System Architecture</span>
                     <span>Last Updated: 2026-02-14</span>
                 </footer>

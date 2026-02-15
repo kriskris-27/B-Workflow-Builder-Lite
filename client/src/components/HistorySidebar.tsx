@@ -40,7 +40,7 @@ export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
     };
 
     const clearRecentRuns = async () => {
-        
+
         try {
             const res = await fetch(`${API_URL}/api/recent-runs?user_id=${userId}`, {
                 method: 'DELETE',
@@ -65,11 +65,11 @@ export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
             <header className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-4 bg-white" />
-                    <h3 className="text-xs font-black tracking-[0.3em] text-[#444] uppercase">Archive</h3>
+                    <h3 className="text-xs font-black tracking-[0.3em] text-[#808080] uppercase">Archive</h3>
                 </div>
                 <button
                     onClick={clearRecentRuns}
-                    className="group flex items-center gap-2 text-[10px] font-black text-[#444] hover:text-red-500 transition-colors uppercase tracking-[0.2em]"
+                    className="group flex items-center gap-2 text-[10px] font-black text-[#808080] hover:text-red-500 transition-colors uppercase tracking-[0.2em]"
                 >
                     <Trash2 className="w-3 h-3 translate-y-[-1px]" />
                     Clear
@@ -101,11 +101,11 @@ export default function HistorySidebar({ onSelectRun, userId, refreshKey }: {
                                     </span>
                                     <ArrowRight className="w-3.5 h-3.5 text-[#222] group-hover:text-white transition-all transform group-hover:translate-x-1" />
                                 </header>
-                                <p className="text-[12px] text-[#444] group-hover:text-[#888] line-clamp-2 mb-4 font-mono leading-relaxed">
+                                <p className="text-[12px] text-[#808080] group-hover:text-[#888] line-clamp-2 mb-4 font-mono leading-relaxed">
                                     {typeof run.input_data === 'string' ? run.input_data : JSON.stringify(run.input_data)}
                                 </p>
                                 <footer className="flex items-center justify-between">
-                                    <span className="text-[9px] font-black text-[#222] group-hover:text-[#444] transition-colors tabular-nums">
+                                    <span className="text-[9px] font-black text-[#222] group-hover:text-[#808080] transition-colors tabular-nums">
                                         {new Date(run.created_at).toLocaleTimeString()}
                                     </span>
                                     <div className="w-1.5 h-1.5 rounded-full bg-white/5 group-hover:bg-white transition-colors" />

@@ -120,7 +120,7 @@ export default function App() {
                     <NavIcon icon={Settings} active={false} onClick={() => { }} label="CONFIG" />
                     <div className="py-4 flex flex-col items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${apiOk && dbOk && geminiStatus === 'connected' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-red-500'} transition-all`} />
-                        <span className="text-[8px] font-black tracking-widest text-[#444] uppercase">Link</span>
+                        <span className="text-[8px] font-black tracking-widest text-[#808080] uppercase">Link</span>
                     </div>
                 </div>
             </nav>
@@ -153,8 +153,8 @@ export default function App() {
                                 onClick={() => setView('dashboard')}
                                 className="group flex items-center gap-3 py-2.5 px-4 bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all rounded-xl active:scale-95"
                             >
-                                <ArrowLeft className="w-4 h-4 text-[#444] group-hover:text-white" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-[#444] group-hover:text-white">RETREAT_EXIT</span>
+                                <ArrowLeft className="w-4 h-4 text-[#808080] group-hover:text-white" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-[#808080] group-hover:text-white">RETREAT_EXIT</span>
                             </button>
                         )}
                         <div className="flex items-center gap-6">
