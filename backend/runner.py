@@ -9,7 +9,7 @@ class WorkflowRunner:
         if not api_key:
             raise ValueError("GOOGLE_API_KEY not found in environment")
         self.client = genai.Client(api_key=api_key)
-        self.model_id = "gemini-2.5-flash-lite"
+        self.model_id = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
     async def _call_gemini(self, prompt: str) -> str:
         try:
