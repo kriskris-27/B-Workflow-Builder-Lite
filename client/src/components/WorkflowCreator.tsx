@@ -92,7 +92,7 @@ export default function WorkflowCreator({ onRun }: { onRun: (name: string, steps
                                     </div>
                                     <button
                                         onClick={() => removeStep(idx)}
-                                        className="p-5 hover:bg-red-500/10 rounded-3xl text-[#222] hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                        className="p-5 bg-red-500/5 hover:bg-red-500/20 rounded-3xl text-red-500/50 hover:text-red-500 transition-all active:scale-95"
                                     >
                                         <Trash2 className="w-6 h-6" />
                                     </button>
